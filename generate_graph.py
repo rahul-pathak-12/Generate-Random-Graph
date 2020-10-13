@@ -1,10 +1,10 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 import random
 
 class rdgraph():
-    node_conn = defaultdict( list )
-    connections = []
-    coordinates = []
+    node_conn = defaultdict( list ) # data { 0: [1,2] }
+    connections = []    # coordinates  = [ (1.1, 2.2, 1.5) ]
+    coordinates = []    # connections  = [ (0, 1) ]
 
     def __init__( self, minR=1, maxR=11, minE =1, maxE=1, total_node=7 ):
         self.minR=minR
@@ -12,7 +12,7 @@ class rdgraph():
         self.minE =minE
         self.maxE=maxE
         self.total_node = total_node
-        self.nodes = list(range(0, total_node))
+        self.nodes = list(range(0, total_node)) # [ 0, 1, 2 ] if total nodes = 3
 
     def generate_weight( self ):
         x = round( random.uniform(self.minR, self.maxR), 2 )
@@ -28,7 +28,7 @@ class rdgraph():
             r_edges = random.randint( self.minE, self.maxE  )
             index = 0
             
-            while(index< r_edges):
+            while(index< r_edges): # generate random nodes up till max
                 random_weight = self.generate_weight()
                 random_node = random.randint(0, self.total_node-1)
 
@@ -47,6 +47,36 @@ class rdgraph():
             print( str(y[0]) +","+ str(y[1]) )
         print( self.node_conn )
 
+    def bfs( self, vS, vE ): 
+            # For this we need a dictionary which keeps track of the path that has been visited
+            # a queue for the the search. 
+            # essentially the nodes we have visited
+            dist = { vS: [vS] } # Populate the dict with the initial node and its cnxions
+            q = deque() 
+            q.append(vS)    # Create a que with the vStart node
+
+            while len(q):   # While the que is greater than 0
+                at = q.popleft() # get the left elem of the que 
+
+                # loop through the connections that we popped { 1 : [0, 2] }
+                for next in self.node_conn[at]:
+                    if next not in dist:    # If the connection is not in the dict 
+                                    # we add that new node to the dict with that node conxns
+                        dist[next] = [ dist[at], next ]
+                # we appendthe initial node we followed and the next node to be explored. 
+                        q.append( next )
+            # This is repeated until all connections this node is connected to are explored. 
+
+            #pp(dist)
+            # vE is the 
+            if vE in dist: 
+                return dist[ vE ]
+            else: 
+                return "NO PATH FOUND" 
+
 x = rdgraph()
 x.generate_graph()
 print( x.visualise() )
+
+path = x.bfs( 0, 2 )
+print( path )
